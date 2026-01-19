@@ -1,0 +1,47 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "project_proposals",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "audit_status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "created_at",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "project_proposals",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "audit_status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "efficiency_score",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "land_parcels",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "zone_color",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "distance_from_cbd_km",
+                    "order": "ASCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}
