@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         fontSize: 9
     },
     formula: {
-        fontFamily: 'Courier',
+        fontFamily: 'Sarabun',
         backgroundColor: '#f1f5f9',
         padding: 8,
         marginVertical: 8,
@@ -241,7 +241,7 @@ const DataRow = ({ label, value }: { label: string; value: string }) => (
 
 const PageFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
     <>
-        <Text style={styles.footer}>BaanBid - ระบบวิเคราะห์ที่ดินราชพัสดุ</Text>
+        <Text style={styles.footer}>ระบบวิเคราะห์ที่ดินราชพัสดุ</Text>
         <Text style={styles.pageNumber}>หน้า {pageNum} / {totalPages}</Text>
     </>
 );
@@ -264,13 +264,13 @@ export const BaanBidPDFReport: React.FC<{ data: PDFReportData }> = ({ data }) =>
             <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
                     <Text style={styles.title}>รายงานวิเคราะห์ที่ดินราชพัสดุ</Text>
-                    <Text style={styles.subtitle}>BaanBid - Bertaud Urban Economics Model Analysis</Text>
+                    <Text style={styles.subtitle}>Bertaud Urban Economics Model Analysis</Text>
                     <Text style={{ ...styles.subtitle, marginTop: 5, fontSize: 9 }}>
                         สร้างเมื่อ: {data.generatedAt}
                     </Text>
                 </View>
 
-                <Text style={styles.pageTitle}>📋 Page 1: สรุปโครงการ (Project Summary)</Text>
+                <Text style={styles.pageTitle}>📋 สรุปโครงการ (Project Summary)</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>ข้อมูลที่ดิน</Text>
@@ -300,7 +300,7 @@ export const BaanBidPDFReport: React.FC<{ data: PDFReportData }> = ({ data }) =>
 
             {/* ==================== PAGE 2: Efficiency Analysis ==================== */}
             <Page size="A4" style={styles.page}>
-                <Text style={styles.pageTitle}>📊 Page 2: การวิเคราะห์ประสิทธิภาพ (Efficiency Analysis)</Text>
+                <Text style={styles.pageTitle}>📊 การวิเคราะห์ประสิทธิภาพ (Efficiency Analysis)</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>ผลการวิเคราะห์ FAR (Floor Area Ratio)</Text>
@@ -346,7 +346,7 @@ export const BaanBidPDFReport: React.FC<{ data: PDFReportData }> = ({ data }) =>
 
             {/* ==================== PAGE 3: Financial Audit ==================== */}
             <Page size="A4" style={styles.page}>
-                <Text style={styles.pageTitle}>💰 Page 3: การตรวจสอบทางการเงิน (Financial Audit)</Text>
+                <Text style={styles.pageTitle}>💰 การตรวจสอบทางการเงิน (Financial Audit)</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>มูลค่าปัจจุบันสุทธิ (NPV Analysis)</Text>
@@ -398,7 +398,7 @@ export const BaanBidPDFReport: React.FC<{ data: PDFReportData }> = ({ data }) =>
 
             {/* ==================== PAGE 4: Comparative Feasibility ==================== */}
             <Page size="A4" style={styles.page}>
-                <Text style={styles.pageTitle}>📈 Page 4: การศึกษาความเป็นไปได้เปรียบเทียบ (Comparative Feasibility)</Text>
+                <Text style={styles.pageTitle}>📈 การศึกษาความเป็นไปได้เปรียบเทียบ (Comparative Feasibility)</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>เปรียบเทียบ 3 ทางเลือกการพัฒนา</Text>
@@ -468,7 +468,7 @@ export const BaanBidPDFReport: React.FC<{ data: PDFReportData }> = ({ data }) =>
 
             {/* ==================== PAGE 5: Legal & Recommendation ==================== */}
             <Page size="A4" style={styles.page}>
-                <Text style={styles.pageTitle}>⚖️ Page 5: ข้อจำกัดกฎหมาย & ข้อเสนอแนะ (Legal Constraints & Recommendation)</Text>
+                <Text style={styles.pageTitle}>⚖️ ข้อจำกัดกฎหมาย & ข้อเสนอแนะ (Legal Constraints & Recommendation)</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>ข้อจำกัดทางกฎหมาย</Text>

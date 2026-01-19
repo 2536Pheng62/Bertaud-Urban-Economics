@@ -31,7 +31,7 @@ export const downloadBaanBidPDF = async (data: PDFReportData, filename?: string)
             throw new Error('PDF generation failed - blob is empty');
         }
 
-        const pdfFilename = filename || `BaanBid_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        const pdfFilename = filename || `Project_Analysis_Report_${new Date().toISOString().split('T')[0]}.pdf`;
 
         // Create blob URL
         const blobUrl = URL.createObjectURL(blob);
