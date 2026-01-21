@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { AlertCircle, Calculator, Building, Coins, FileText, CheckCircle2, XCircle, AlertTriangle, Download } from 'lucide-react';
+import { AlertCircle, Calculator, Building, Coins, FileText, CheckCircle2, XCircle, AlertTriangle, Download, HelpCircle, X, BookOpen, TrendingUp, MapPin, Scale, Landmark, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { calculateFAR, isFARError, type FARInputs } from './utils/farCalculation';
 import { downloadBaanBidPDF, type PDFReportData } from './components/pdfExportUtils';
-import GoogleMapLocation from './components/GoogleMapLocation';
 
 // --- NumberInput Component with comma formatting ---
 interface NumberInputProps {
     id: string;
     value: number;
     onChange: (value: number) => void;
-    className?: string;
+    className: string; // Make className required
     min?: number;
 }
 
 function NumberInput({ id, value, onChange, className, min = 0 }: NumberInputProps) {
     const [displayValue, setDisplayValue] = useState(value.toLocaleString('en-US'));
-    const [isFocused, setIsFocused] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_isFocused, setIsFocused] = useState(false);
 
     // Format number with commas
     const formatNumber = (num: number) => num.toLocaleString('en-US');
@@ -56,10 +56,8 @@ function NumberInput({ id, value, onChange, className, min = 0 }: NumberInputPro
 
     // Sync display value when value prop changes (from outside)
     React.useEffect(() => {
-        if (!isFocused) {
-            setDisplayValue(formatNumber(value));
-        }
-    }, [value, isFocused]);
+        setDisplayValue(formatNumber(value));
+    }, [value]);
 
     return (
         <input
@@ -67,6 +65,8 @@ function NumberInput({ id, value, onChange, className, min = 0 }: NumberInputPro
             type="text"
             inputMode="numeric"
             value={displayValue}
+            title={id} // Add title attribute
+            placeholder={id} // Add placeholder attribute
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -98,6 +98,11 @@ export default function ProjectAuditDashboard() {
     const [upfrontFee, setUpfrontFee] = useState<number>(50000000);
     const [annualRent, setAnnualRent] = useState<number>(12000000);
     const [proposedGFA, setProposedGFA] = useState<number>(40000); // Gross Floor Area
+    
+    // --- State: Help Modal ---
+    const [showHelp, setShowHelp] = useState<boolean>(false);
+    const [helpSection, setHelpSection] = useState<string>('overview');
+    const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
     // --- State: Bertaud Model Parameters ---
     // D(x) = D₀ × e^(-g × x)
@@ -254,16 +259,622 @@ export default function ProjectAuditDashboard() {
                             <p className="text-xs text-slate-400 mt-1">พัฒนาโดย <span className="font-semibold text-blue-600">A.THONGCHART</span></p>
                         </div>
                     </div>
-                    {result && (
+                    <div className="flex items-center space-x-3">
                         <button
-                            onClick={handleExportPDF}
-                            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105"
+                            onClick={() => setShowHelp(true)}
+                            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105"
+                            title="คู่มือการใช้งาน"
                         >
-                            <Download className="w-5 h-5" />
-                            <span>ส่งออก PDF</span>
+                            <HelpCircle className="w-5 h-5" />
+                            <span>Help</span>
                         </button>
-                    )}
+                        {result && (
+                            <button
+                                onClick={handleExportPDF}
+                                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105"
+                            >
+                                <Download className="w-5 h-5" />
+                                <span>ส่งออก PDF</span>
+                            </button>
+                        )}
+                    </div>
                 </header>
+
+                {/* Help Modal */}
+                {showHelp && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                            {/* Modal Header */}
+                            <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50 flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-emerald-600 rounded-lg">
+                                        <BookOpen className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-800">คู่มือการใช้งาน</h2>
+                                        <p className="text-sm text-slate-500">Bertaud Urban Economics & Financial Feasibility Analysis</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowHelp(false)}
+                                    className="p-2 hover:bg-slate-200 rounded-lg transition"
+                                    aria-label="ปิด"
+                                >
+                                    <X className="w-6 h-6 text-slate-500" />
+                                </button>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="flex flex-1 overflow-hidden">
+                                {/* Sidebar Navigation */}
+                                <nav className="w-64 bg-slate-50 border-r border-slate-200 p-4 overflow-y-auto">
+                                    <ul className="space-y-1">
+                                        {[
+                                            { id: 'overview', label: 'ภาพรวมแอปพลิเคชัน', icon: Building },
+                                            { id: 'bertaud', label: 'ทฤษฎี Bertaud Model', icon: TrendingUp },
+                                            { id: 'variables', label: 'ตัวแปรและพารามิเตอร์', icon: Scale },
+                                            { id: 'financial', label: 'การวิเคราะห์การเงิน', icon: Coins },
+                                            { id: 'options', label: 'ทางเลือกการพัฒนา', icon: MapPin },
+                                            { id: 'legal', label: 'ข้อจำกัดทางกฎหมาย', icon: Landmark },
+                                            { id: 'faq', label: 'คำถามที่พบบ่อย', icon: HelpCircle },
+                                        ].map(({ id, label, icon: Icon }) => (
+                                            <li key={id}>
+                                                <button
+                                                    onClick={() => setHelpSection(id)}
+                                                    className={cn(
+                                                        "w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                                                        helpSection === id
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : "text-slate-600 hover:bg-slate-100"
+                                                    )}
+                                                >
+                                                    <Icon className="w-4 h-4" />
+                                                    <span>{label}</span>
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+
+                                {/* Content Area */}
+                                <div className="flex-1 p-6 overflow-y-auto">
+                                    {/* Overview Section */}
+                                    {helpSection === 'overview' && (
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-slate-800 mb-3">ภาพรวมแอปพลิเคชัน</h3>
+                                                <p className="text-slate-600 leading-relaxed">
+                                                    ระบบวิเคราะห์เศรษฐศาสตร์เมืองและความเป็นไปได้ทางการเงิน (Bertaud Urban Economics & Financial Feasibility Analysis) 
+                                                    เป็นเครื่องมือวิเคราะห์ที่ใช้หลักการ <strong>Monocentric City Model</strong> ของ <strong>Alain Bertaud</strong> 
+                                                    เพื่อประเมินความเหมาะสมของโครงการพัฒนาอสังหาริมทรัพย์
+                                                </p>
+                                            </div>
+
+                                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                                <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                                                    <AlertCircle className="w-5 h-5 mr-2" />
+                                                    จุดประสงค์หลักของระบบ
+                                                </h4>
+                                                <ul className="space-y-2 text-blue-700">
+                                                    <li className="flex items-start space-x-2">
+                                                        <ArrowRight className="w-4 h-4 mt-1 flex-shrink-0" />
+                                                        <span><strong>วิเคราะห์ความหนาแน่น (FAR)</strong> - คำนวณ Floor Area Ratio ที่เหมาะสมตามทำเลที่ตั้ง</span>
+                                                    </li>
+                                                    <li className="flex items-start space-x-2">
+                                                        <ArrowRight className="w-4 h-4 mt-1 flex-shrink-0" />
+                                                        <span><strong>ตรวจสอบความเป็นไปได้ทางการเงิน</strong> - คำนวณ NPV, ROA, และตรวจสอบค่าก่อสร้าง</span>
+                                                    </li>
+                                                    <li className="flex items-start space-x-2">
+                                                        <ArrowRight className="w-4 h-4 mt-1 flex-shrink-0" />
+                                                        <span><strong>เปรียบเทียบทางเลือกการพัฒนา</strong> - High-rise, Warehouse, หรือ PPP</span>
+                                                    </li>
+                                                    <li className="flex items-start space-x-2">
+                                                        <ArrowRight className="w-4 h-4 mt-1 flex-shrink-0" />
+                                                        <span><strong>ออกรายงาน PDF</strong> - สร้างรายงานวิเคราะห์โครงการอย่างเป็นระบบ</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4 text-center">
+                                                    <Calculator className="w-10 h-10 text-purple-600 mx-auto mb-2" />
+                                                    <h5 className="font-semibold text-purple-800">วิเคราะห์ FAR</h5>
+                                                    <p className="text-sm text-purple-600 mt-1">ตามทฤษฎี Bertaud</p>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 text-center">
+                                                    <Coins className="w-10 h-10 text-green-600 mx-auto mb-2" />
+                                                    <h5 className="font-semibold text-green-800">ตรวจสอบการเงิน</h5>
+                                                    <p className="text-sm text-green-600 mt-1">NPV, ROA, Cost Audit</p>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 text-center">
+                                                    <FileText className="w-10 h-10 text-amber-600 mx-auto mb-2" />
+                                                    <h5 className="font-semibold text-amber-800">ออกรายงาน</h5>
+                                                    <p className="text-sm text-amber-600 mt-1">PDF Report</p>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h4 className="font-semibold text-slate-700 mb-3">ขั้นตอนการใช้งาน</h4>
+                                                <ol className="space-y-3">
+                                                    {[
+                                                        'กรอกข้อมูลโครงการ: ขนาดที่ดิน, พื้นที่อาคาร, ความสูง, ค่าก่อสร้าง',
+                                                        'กรอกข้อเสนอการเงิน: ค่าธรรมเนียมแรกเข้า, ค่าเช่ารายปี',
+                                                        'ตั้งค่าพารามิเตอร์ Bertaud: D₀, g, และระยะห่างจาก CBD',
+                                                        'ดูผลการวิเคราะห์: ดัชนีประสิทธิภาพ, NPV, ROA, และทางเลือกที่เหมาะสม',
+                                                        'ส่งออกรายงาน PDF เพื่อใช้ประกอบการตัดสินใจ'
+                                                    ].map((step, idx) => (
+                                                        <li key={idx} className="flex items-start space-x-3">
+                                                            <span className="flex-shrink-0 w-7 h-7 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-sm">
+                                                                {idx + 1}
+                                                            </span>
+                                                            <span className="text-slate-600">{step}</span>
+                                                        </li>
+                                                    ))}
+                                                </ol>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Bertaud Model Section */}
+                                    {helpSection === 'bertaud' && (
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-slate-800 mb-3">ทฤษฎี Bertaud Model</h3>
+                                                <p className="text-slate-600 leading-relaxed">
+                                                    <strong>Alain Bertaud</strong> เป็นนักเศรษฐศาสตร์เมืองและนักวางผังเมืองชาวฝรั่งเศส 
+                                                    ผู้พัฒนาแบบจำลอง <strong>Monocentric City Model</strong> ที่อธิบายรูปแบบความหนาแน่นของเมืองตามระยะทางจากศูนย์กลาง
+                                                </p>
+                                            </div>
+
+                                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                                                <h4 className="font-bold text-blue-800 mb-4">สมการหลัก: Density Gradient Function</h4>
+                                                <div className="bg-white p-4 rounded-lg border border-blue-200 text-center mb-4">
+                                                    <p className="text-2xl font-mono text-slate-800">
+                                                        D(x) = D<sub>0</sub> × e<sup>−gx</sup>
+                                                    </p>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                                    <div className="bg-white/50 p-3 rounded-lg">
+                                                        <p className="font-semibold text-blue-700">D(x) = Theoretical FAR</p>
+                                                        <p className="text-slate-600">ความหนาแน่นที่เหมาะสม ณ ระยะ x จาก CBD</p>
+                                                    </div>
+                                                    <div className="bg-white/50 p-3 rounded-lg">
+                                                        <p className="font-semibold text-blue-700">D₀ = Central Density</p>
+                                                        <p className="text-slate-600">ความหนาแน่นสูงสุดที่ศูนย์กลางเมือง (CBD)</p>
+                                                    </div>
+                                                    <div className="bg-white/50 p-3 rounded-lg">
+                                                        <p className="font-semibold text-blue-700">g = Density Gradient</p>
+                                                        <p className="text-slate-600">ค่าสัมประสิทธิ์อัตราการลดลงของความหนาแน่น</p>
+                                                    </div>
+                                                    <div className="bg-white/50 p-3 rounded-lg">
+                                                        <p className="font-semibold text-blue-700">x = Distance from CBD</p>
+                                                        <p className="text-slate-600">ระยะทางจากศูนย์กลางธุรกิจ (กิโลเมตร)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h4 className="font-semibold text-slate-700 mb-3">หลักการสำคัญ</h4>
+                                                <ul className="space-y-3 text-slate-600">
+                                                    <li className="flex items-start space-x-3">
+                                                        <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+                                                        <div>
+                                                            <strong>ยิ่งใกล้ CBD ยิ่งหนาแน่น:</strong> ความหนาแน่นของการใช้ที่ดินสูงสุดที่ศูนย์กลางเมือง 
+                                                            และลดลงแบบ Exponential เมื่อห่างออกไป
+                                                        </div>
+                                                    </li>
+                                                    <li className="flex items-start space-x-3">
+                                                        <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+                                                        <div>
+                                                            <strong>ราคาที่ดินกำหนดความหนาแน่น:</strong> ที่ดินใกล้ CBD มีราคาสูง 
+                                                            จึงต้องสร้างอาคารสูงเพื่อให้คุ้มค่าการลงทุน
+                                                        </div>
+                                                    </li>
+                                                    <li className="flex items-start space-x-3">
+                                                        <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+                                                        <div>
+                                                            <strong>ดัชนีประสิทธิภาพ:</strong> เปรียบเทียบ FAR ที่เสนอกับ FAR ตามทฤษฎี 
+                                                            หากต่ำกว่า 0.8 = Under (ใช้ที่ดินไม่คุ้ม), 0.8-1.2 = Optimal, มากกว่า 1.2 = Over (หนาแน่นเกิน)
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                                <h4 className="font-semibold text-amber-800 mb-3 flex items-center">
+                                                    <AlertTriangle className="w-5 h-5 mr-2" />
+                                                    ตัวอย่างการคำนวณ
+                                                </h4>
+                                                <div className="bg-white p-4 rounded-lg border border-amber-200 font-mono text-sm mb-3">
+                                                    <p>สมมติ: D₀ = 10, g = 0.1, x = 2 กม.</p>
+                                                    <p className="mt-2">D(2) = 10 × e<sup>−0.1×2</sup> = 10 × e<sup>−0.2</sup> = 10 × 0.8187 = <strong>8.19</strong></p>
+                                                    <p className="mt-2 text-emerald-700">ความหนาแน่นที่เหมาะสม ณ ระยะ 2 กม. จาก CBD คือ FAR 8.19</p>
+                                                </div>
+                                                <p className="text-sm text-amber-700">
+                                                    หากโครงการเสนอ FAR = 5.00 → ดัชนีประสิทธิภาพ = 5.00 / 8.19 = 0.61 (UNDER - ใช้ที่ดินไม่เต็มศักยภาพ)
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Variables Section */}
+                                    {helpSection === 'variables' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-2xl font-bold text-slate-800 mb-3">ตัวแปรและพารามิเตอร์</h3>
+                                            
+                                            {/* Project Variables */}
+                                            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                                <h4 className="font-bold text-slate-700 mb-4 flex items-center">
+                                                    <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                                                    ข้อมูลโครงการ
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {[
+                                                        { name: 'ขนาดที่ดิน (ไร่)', desc: 'พื้นที่ที่ดินทั้งหมดของโครงการ โดย 1 ไร่ = 1,600 ตร.ม.', example: '5 ไร่ = 8,000 ตร.ม.' },
+                                                        { name: 'พื้นที่อาคารรวม (GFA)', desc: 'Gross Floor Area - พื้นที่อาคารทุกชั้นรวมกัน ใช้คำนวณ FAR ที่เสนอ', example: '40,000 ตร.ม.' },
+                                                        { name: 'ความสูงอาคาร (ม.)', desc: 'ความสูงอาคารจากพื้นดินถึงยอด ใช้กำหนดมาตรฐานค่าก่อสร้าง (>23ม. = อาคารสูง)', example: '30 เมตร = อาคารสูง' },
+                                                        { name: 'ค่าก่อสร้าง (บาท/ตร.ม.)', desc: 'ต้นทุนการก่อสร้างต่อตารางเมตร ใช้ตรวจสอบความผิดปกติของราคา', example: '25,000 บาท/ตร.ม.' },
+                                                    ].map(({ name, desc, example }, idx) => (
+                                                        <div key={idx} className="bg-white p-3 rounded-lg border border-slate-100">
+                                                            <p className="font-semibold text-slate-800">{name}</p>
+                                                            <p className="text-sm text-slate-600 mt-1">{desc}</p>
+                                                            <p className="text-xs text-emerald-600 mt-1">ตัวอย่าง: {example}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Financial Variables */}
+                                            <div className="bg-green-50 rounded-xl p-5 border border-green-200">
+                                                <h4 className="font-bold text-green-700 mb-4 flex items-center">
+                                                    <Coins className="w-5 h-5 mr-2" />
+                                                    ข้อเสนอด้านการเงิน
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {[
+                                                        { name: 'ค่าธรรมเนียมแรกเข้า', desc: 'เงินก้อนที่ผู้เช่าจ่ายครั้งเดียวตอนเริ่มสัญญา', example: '50,000,000 บาท' },
+                                                        { name: 'ค่าเช่ารายปี', desc: 'ค่าเช่าที่จ่ายทุกปี (ปรับขึ้น 15% ทุก 5 ปี)', example: '12,000,000 บาท/ปี' },
+                                                    ].map(({ name, desc, example }, idx) => (
+                                                        <div key={idx} className="bg-white p-3 rounded-lg border border-green-100">
+                                                            <p className="font-semibold text-green-800">{name}</p>
+                                                            <p className="text-sm text-slate-600 mt-1">{desc}</p>
+                                                            <p className="text-xs text-emerald-600 mt-1">ตัวอย่าง: {example}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Bertaud Parameters */}
+                                            <div className="bg-orange-50 rounded-xl p-5 border border-orange-200">
+                                                <h4 className="font-bold text-orange-700 mb-4 flex items-center">
+                                                    <TrendingUp className="w-5 h-5 mr-2" />
+                                                    พารามิเตอร์ Bertaud Model
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    <div className="bg-white p-4 rounded-lg border border-orange-100">
+                                                        <p className="font-semibold text-orange-800">D₀ (ความหนาแน่นศูนย์กลาง)</p>
+                                                        <p className="text-sm text-slate-600 mt-1">FAR สูงสุดที่ศูนย์กลางเมือง (CBD) - แสดงระดับการพัฒนาของเมือง</p>
+                                                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">8 = เมืองขนาดเล็ก</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">10 = เมืองขนาดกลาง</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">12 = มหานครใหญ่</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">15 = มหานครหนาแน่นมาก</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-white p-4 rounded-lg border border-orange-100">
+                                                        <p className="font-semibold text-orange-800">g (อัตราลดความหนาแน่น)</p>
+                                                        <p className="text-sm text-slate-600 mt-1">Density Gradient - ค่ายิ่งสูง ความหนาแน่นยิ่งลดเร็วเมื่อห่างจาก CBD</p>
+                                                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">0.05 = Sprawl (เมืองกระจาย)</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">0.10 = ปกติ (Default)</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">0.15 = Compact (เมืองกระชับ)</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">0.20 = เข้มข้นมาก</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-white p-4 rounded-lg border border-orange-100">
+                                                        <p className="font-semibold text-orange-800">x (ระยะห่างจาก CBD)</p>
+                                                        <p className="text-sm text-slate-600 mt-1">ระยะทางจากศูนย์กลางธุรกิจ (Central Business District) หน่วยกิโลเมตร</p>
+                                                        <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">0 กม. = CBD</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">2 กม. = ใกล้ศูนย์กลาง</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">5 กม. = ชานเมืองใน</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">10 กม. = ชานเมืองนอก</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">15 กม. = ห่างไกล</span>
+                                                            <span className="bg-orange-100 px-2 py-1 rounded">20 กม. = นอกเขตเมือง</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Financial Analysis Section */}
+                                    {helpSection === 'financial' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-2xl font-bold text-slate-800 mb-3">การวิเคราะห์ความเป็นไปได้ทางการเงิน</h3>
+                                            
+                                            {/* NPV */}
+                                            <div className="bg-green-50 rounded-xl p-5 border border-green-200">
+                                                <h4 className="font-bold text-green-700 mb-3">1. มูลค่าปัจจุบันสุทธิ (NPV - Net Present Value)</h4>
+                                                <div className="bg-white p-4 rounded-lg border border-green-200 text-center mb-3">
+                                                    <p className="text-xl font-mono text-slate-800">NPV = Σ [ CFₜ / (1 + r)ᵗ ]</p>
+                                                </div>
+                                                <ul className="space-y-2 text-sm text-slate-600">
+                                                    <li><strong>CFₜ</strong> = กระแสเงินสดสุทธิในปีที่ t (ค่าธรรมเนียม + ค่าเช่า)</li>
+                                                    <li><strong>r</strong> = อัตราคิดลด (Discount Rate) ใช้ 3.5% สำหรับโครงการรัฐ</li>
+                                                    <li><strong>t</strong> = ปีที่คำนวณ (1 ถึง 30 ปี)</li>
+                                                </ul>
+                                                <p className="text-sm text-green-700 mt-3">
+                                                    💡 NPV เป็นบวก หมายความว่าโครงการให้ผลตอบแทนสูงกว่าอัตราคิดลดที่กำหนด
+                                                </p>
+                                            </div>
+
+                                            {/* Cost Audit */}
+                                            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
+                                                <h4 className="font-bold text-amber-700 mb-3">2. ตรวจสอบค่าก่อสร้าง (Cost Audit)</h4>
+                                                <p className="text-slate-600 mb-3">เปรียบเทียบค่าก่อสร้างที่เสนอกับมาตรฐาน:</p>
+                                                <div className="grid grid-cols-2 gap-3 mb-3">
+                                                    <div className="bg-white p-3 rounded-lg border border-amber-100">
+                                                        <p className="font-semibold text-amber-800">อาคารสูง (&gt;23ม.)</p>
+                                                        <p className="text-sm text-slate-600">มาตรฐาน: 30,000 บาท/ตร.ม.</p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-lg border border-amber-100">
+                                                        <p className="font-semibold text-amber-800">อาคารต่ำ (≤23ม.)</p>
+                                                        <p className="text-sm text-slate-600">มาตรฐาน: 15,000 บาท/ตร.ม.</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-amber-700">
+                                                    ⚠️ หากเบี่ยงเบน &gt;20% จากมาตรฐาน จะแจ้งเตือน "พบความผิดปกติ"
+                                                </p>
+                                            </div>
+
+                                            {/* ROA */}
+                                            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                                                <h4 className="font-bold text-blue-700 mb-3">3. ผลตอบแทนต่อสินทรัพย์ (ROA)</h4>
+                                                <div className="bg-white p-4 rounded-lg border border-blue-200 text-center mb-3">
+                                                    <p className="text-xl font-mono text-slate-800">ROA = (NPV ÷ 30 ปี) ÷ มูลค่าลงทุน</p>
+                                                </div>
+                                                <p className="text-slate-600 mb-2">มูลค่าลงทุน = ค่าก่อสร้าง × พื้นที่อาคาร</p>
+                                                <p className="text-sm text-blue-700">
+                                                    ✅ เป้าหมาย: ROA ≥ 3% ถือว่าตามเป้าหมาย
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Development Options Section */}
+                                    {helpSection === 'options' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-2xl font-bold text-slate-800 mb-3">ทางเลือกการพัฒนา 3 รูปแบบ</h3>
+                                            
+                                            <div className="grid gap-4">
+                                                {/* Option A */}
+                                                <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
+                                                    <h4 className="font-bold text-purple-700 mb-2 flex items-center">
+                                                        <span className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center mr-2 text-sm">A</span>
+                                                        High-rise Development (FAR 10:1)
+                                                    </h4>
+                                                    <p className="text-slate-600 mb-3">เหมาะสำหรับที่ดินใกล้ CBD (≤2 กม.)</p>
+                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">ค่าก่อสร้าง</p>
+                                                            <p className="font-semibold text-purple-700">35,000 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">รายได้ค่าเช่า</p>
+                                                            <p className="font-semibold text-purple-700">600-800 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">Payback</p>
+                                                            <p className="font-semibold text-purple-700">12-15 ปี</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Option B */}
+                                                <div className="bg-cyan-50 rounded-xl p-5 border border-cyan-200">
+                                                    <h4 className="font-bold text-cyan-700 mb-2 flex items-center">
+                                                        <span className="w-8 h-8 bg-cyan-600 text-white rounded-full flex items-center justify-center mr-2 text-sm">B</span>
+                                                        Premium Warehouse (BCR 60%)
+                                                    </h4>
+                                                    <p className="text-slate-600 mb-3">เหมาะสำหรับที่ดินชานเมือง (2-10 กม.)</p>
+                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">ค่าก่อสร้าง</p>
+                                                            <p className="font-semibold text-cyan-700">15,000 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">รายได้ค่าเช่า</p>
+                                                            <p className="font-semibold text-cyan-700">150-200 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">Payback</p>
+                                                            <p className="font-semibold text-cyan-700">8-10 ปี</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Option C */}
+                                                <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
+                                                    <h4 className="font-bold text-amber-700 mb-2 flex items-center">
+                                                        <span className="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center mr-2 text-sm">C</span>
+                                                        PPP Partnership (เช่า 30 ปี)
+                                                    </h4>
+                                                    <p className="text-slate-600 mb-3">เหมาะสำหรับที่ดินห่างไกล (&gt;10 กม.)</p>
+                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">ค่าก่อสร้าง</p>
+                                                            <p className="font-semibold text-amber-700">25,000 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">รายได้ค่าเช่า</p>
+                                                            <p className="font-semibold text-amber-700">400-500 บาท/ตร.ม.</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded text-center">
+                                                            <p className="text-slate-500">Payback</p>
+                                                            <p className="font-semibold text-amber-700">18-22 ปี</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                                <h4 className="font-semibold text-slate-700 mb-3">Sensitivity Analysis</h4>
+                                                <p className="text-slate-600 text-sm mb-3">ผลกระทบเมื่ออัตราคิดลดเพิ่มขึ้น 1% (3.5% → 4.5%)</p>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="bg-white p-3 rounded-lg border text-center">
+                                                        <p className="text-purple-600 font-semibold">Option A</p>
+                                                        <p className="text-red-600 font-mono">NPV -8.5%</p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-lg border text-center">
+                                                        <p className="text-cyan-600 font-semibold">Option B</p>
+                                                        <p className="text-red-600 font-mono">NPV -5.2%</p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-lg border text-center">
+                                                        <p className="text-amber-600 font-semibold">Option C</p>
+                                                        <p className="text-red-600 font-mono">NPV -12.3%</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-3 italic">
+                                                    💡 PPP มีความอ่อนไหวต่ออัตราคิดลดสูงสุด เนื่องจากระยะเวลาสัญญายาว 30 ปี
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Legal Constraints Section */}
+                                    {helpSection === 'legal' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-2xl font-bold text-slate-800 mb-3">ข้อจำกัดทางกฎหมาย</h3>
+                                            
+                                            <div className="grid gap-4">
+                                                <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                                    <h4 className="font-bold text-slate-700 mb-3 flex items-center">
+                                                        <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
+                                                        ระยะร่น (Setback)
+                                                    </h4>
+                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="bg-white p-3 rounded-lg border text-center">
+                                                            <p className="text-slate-500">ด้านหน้า</p>
+                                                            <p className="font-semibold text-slate-800">6 เมตร</p>
+                                                        </div>
+                                                        <div className="bg-white p-3 rounded-lg border text-center">
+                                                            <p className="text-slate-500">ด้านข้าง</p>
+                                                            <p className="font-semibold text-slate-800">2 เมตร</p>
+                                                        </div>
+                                                        <div className="bg-white p-3 rounded-lg border text-center">
+                                                            <p className="text-slate-500">ด้านหลัง</p>
+                                                            <p className="font-semibold text-slate-800">2 เมตร</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-green-50 rounded-xl p-5 border border-green-200">
+                                                    <h4 className="font-bold text-green-700 mb-3 flex items-center">
+                                                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                                                        Open Space Ratio (OSR)
+                                                    </h4>
+                                                    <p className="text-slate-600">ต้องมีพื้นที่ว่าง ≥30% ของที่ดิน เพื่อเป็นพื้นที่สีเขียวและทางเดิน</p>
+                                                </div>
+
+                                                <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
+                                                    <h4 className="font-bold text-amber-700 mb-3 flex items-center">
+                                                        <AlertTriangle className="w-5 h-5 mr-2" />
+                                                        ข้อจำกัดความสูง
+                                                    </h4>
+                                                    <p className="text-slate-600">ตรวจสอบเขตปลอดภัยสนามบิน / เส้นทางบิน ก่อนออกแบบอาคารสูง</p>
+                                                </div>
+
+                                                <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                                                    <h4 className="font-bold text-blue-700 mb-3 flex items-center">
+                                                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                                                        ที่จอดรถ
+                                                    </h4>
+                                                    <p className="text-slate-600">อัตราส่วน 1 คัน : 60 ตร.ม. พื้นที่ใช้สอย</p>
+                                                    <p className="text-sm text-blue-600 mt-2">
+                                                        ตัวอย่าง: อาคาร 40,000 ตร.ม. ต้องมีที่จอดรถ ≈ 667 คัน
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* FAQ Section */}
+                                    {helpSection === 'faq' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-2xl font-bold text-slate-800 mb-3">คำถามที่พบบ่อย</h3>
+                                            
+                                            <div className="space-y-3">
+                                                {[
+                                                    { 
+                                                        q: 'FAR คืออะไร?', 
+                                                        a: 'FAR (Floor Area Ratio) คืออัตราส่วนพื้นที่อาคารรวมต่อพื้นที่ดิน เช่น FAR 5:1 หมายถึงพื้นที่อาคาร 5 เท่าของพื้นที่ดิน ที่ดิน 1,600 ตร.ม. สามารถมีอาคาร 8,000 ตร.ม.' 
+                                                    },
+                                                    { 
+                                                        q: 'ทำไมต้องใช้ Bertaud Model?', 
+                                                        a: 'Bertaud Model ช่วยหาความหนาแน่นที่ "เหมาะสม" ตามทำเลที่ตั้ง ไม่ใช่แค่ใช้ FAR สูงสุดตามกฎหมาย เพราะการพัฒนาเกินหรือต่ำกว่าศักยภาพของพื้นที่อาจทำให้ไม่คุ้มค่าการลงทุน' 
+                                                    },
+                                                    { 
+                                                        q: 'ดัชนีประสิทธิภาพ (Efficiency Index) แปลว่าอะไร?', 
+                                                        a: 'เป็นอัตราส่วน FAR ที่เสนอ ÷ FAR ตามทฤษฎี Bertaud\n• < 0.8 = UNDER (ใช้ที่ดินไม่เต็มศักยภาพ)\n• 0.8-1.2 = OPTIMAL (เหมาะสม)\n• > 1.2 = OVER (หนาแน่นเกินไป)' 
+                                                    },
+                                                    { 
+                                                        q: 'อัตราคิดลด 3.5% มาจากไหน?', 
+                                                        a: 'เป็นอัตราคิดลดมาตรฐานสำหรับโครงการภาครัฐ ใกล้เคียงกับอัตราผลตอบแทนพันธบัตรรัฐบาลระยะยาว + Risk Premium เล็กน้อย' 
+                                                    },
+                                                    { 
+                                                        q: 'ทำไมค่าเช่าปรับขึ้น 15% ทุก 5 ปี?', 
+                                                        a: 'เป็นเงื่อนไขมาตรฐานในสัญญาเช่าที่ดินราชพัสดุ เพื่อชดเชยเงินเฟ้อและรักษามูลค่าที่แท้จริงของค่าเช่า' 
+                                                    },
+                                                    { 
+                                                        q: 'D₀ กับ Legal Max FAR ต่างกันอย่างไร?', 
+                                                        a: 'D₀ คือความหนาแน่นสูงสุดตามทฤษฎีที่ศูนย์กลางเมือง ส่วน Legal Max FAR คือข้อจำกัดตามกฎหมายผังเมือง ซึ่งอาจน้อยกว่าหรือมากกว่า D₀ ได้' 
+                                                    },
+                                                    { 
+                                                        q: 'ถ้าต้องการค่าเฉพาะของเมืองในประเทศไทยควรใช้ค่าอะไร?', 
+                                                        a: 'สำหรับกรุงเทพฯ แนะนำ D₀ = 10-12, g = 0.1\nสำหรับเมืองภูมิภาค แนะนำ D₀ = 8, g = 0.15\nค่าเหล่านี้สามารถปรับได้ตามการศึกษาความหนาแน่นจริงของพื้นที่' 
+                                                    },
+                                                ].map((faq, idx) => (
+                                                    <div key={idx} className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                                                        <button
+                                                            onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
+                                                            className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-slate-100 transition"
+                                                        >
+                                                            <span className="font-semibold text-slate-700">{faq.q}</span>
+                                                            {expandedFaq === idx ? (
+                                                                <ChevronUp className="w-5 h-5 text-slate-400" />
+                                                            ) : (
+                                                                <ChevronDown className="w-5 h-5 text-slate-400" />
+                                                            )}
+                                                        </button>
+                                                        {expandedFaq === idx && (
+                                                            <div className="px-5 py-4 bg-white border-t border-slate-200">
+                                                                <p className="text-slate-600 whitespace-pre-line">{faq.a}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+                                <p className="text-sm text-slate-500">
+                                    พัฒนาโดย <span className="font-semibold text-blue-600">A.THONGCHART</span>
+                                </p>
+                                <button
+                                    onClick={() => setShowHelp(false)}
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                                >
+                                    เข้าใจแล้ว
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -416,11 +1027,6 @@ export default function ProjectAuditDashboard() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Google Map Location */}
-                        <GoogleMapLocation
-                            distanceKm={distanceKm}
-                        />
                     </div>
 
                     {/* Right Column: Results */}
@@ -452,58 +1058,6 @@ export default function ProjectAuditDashboard() {
                                         <li><strong>g</strong>: ค่าสัมประสิทธิ์การกระจายตัว (Density Gradient) = <strong>{gradient}</strong></li>
                                         <li><strong>x</strong>: ระยะทางจากศูนย์กลาง = <strong>{distanceKm} กม.</strong></li>
                                     </ul>
-                                </div>
-
-                                {/* Scenario 1: FAR Maximizer */}
-                                <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-                                    <h3 className="font-semibold text-amber-800 mb-2 flex items-center">
-                                        📊 Scenario 1: การใช้ประโยชน์สูงสุดตามกฎหมาย (The FAR Maximizer)
-                                    </h3>
-                                    <p className="text-slate-600 mb-3">
-                                        <strong>เหมาะสำหรับ:</strong> ที่ดินในเมือง (CBD) หรือที่ดินราคาสูง ซึ่งค่าที่ดินเป็นต้นทุนหลัก
-                                    </p>
-                                    <p className="text-slate-600 mb-3">
-                                        <strong>แนวคิด:</strong> สร้างอาคารให้มีพื้นที่ใช้สอย (GFA) ใกล้เคียงกับค่า FAR สูงสุดที่กฎหมายผังเมืองกำหนด
-                                    </p>
-                                    <div className="bg-white rounded border border-amber-100 p-3 mb-3">
-                                        <p className="font-medium text-amber-700 mb-2">📐 ตัวชี้วัดความคุ้มค่า:</p>
-                                        <ul className="list-disc list-inside space-y-1 text-slate-600 ml-2">
-                                            <li><strong>Efficiency Ratio:</strong> สัดส่วนพื้นที่ขาย/เช่า ต่อพื้นที่ก่อสร้างทั้งหมด (ควร &gt; 80%)</li>
-                                            <li><strong>Construction Cost per Sq.m:</strong> อาคารสูง (High-rise) มีต้นทุนสูงขึ้นจากระบบวิศวกรรมและโครงสร้างต้านแผ่นดินไหว</li>
-                                        </ul>
-                                    </div>
-                                    <div className="bg-red-50 rounded border border-red-100 p-3">
-                                        <p className="font-medium text-red-700 mb-1">⚠️ จุดที่ต้องระวัง:</p>
-                                        <p className="text-red-600 text-xs">
-                                            หากสร้างจนเต็ม FAR แต่ Demand ในพื้นที่ไม่ถึง จะเกิด "Over-supply" ทำให้ Payback Period ยาวนานจนไม่คุ้มค่าเงินเฟ้อ
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Scenario 2: Operational Efficiency */}
-                                <div className="mb-6 bg-cyan-50 border border-cyan-200 rounded-lg p-4 text-sm">
-                                    <h3 className="font-semibold text-cyan-800 mb-2 flex items-center">
-                                        🏭 Scenario 2: ประสิทธิภาพการดำเนินงาน (Operational Efficiency)
-                                    </h3>
-                                    <p className="text-slate-600 mb-3">
-                                        <strong>เหมาะสำหรับ:</strong> อาคารประเภท คลังสินค้า (Warehouse), โรงงาน หรือศูนย์กระจายสินค้า
-                                    </p>
-                                    <p className="text-slate-600 mb-3">
-                                        <strong>แนวคิด:</strong> ไม่เน้นความสูง แต่เน้น Building Footprint และพื้นที่ว่าง (Open Space) เพื่อการสัญจร
-                                    </p>
-                                    <div className="bg-white rounded border border-cyan-100 p-3 mb-3">
-                                        <p className="font-medium text-cyan-700 mb-2">📐 ตัวชี้วัดความคุ้มค่า:</p>
-                                        <ul className="list-disc list-inside space-y-1 text-slate-600 ml-2">
-                                            <li><strong>Maneuvering Space:</strong> ต้องมีพื้นที่ให้รถบรรทุกขนาดใหญ่กลับรถได้ หากสร้างเต็มที่ดินจนรถเข้า-ออกลำบาก ค่าเช่าจะตกทันที</li>
-                                            <li><strong>Loading Dock Ratio:</strong> จำนวนประตูขนถ่ายสินค้าต่อพื้นที่อาคาร</li>
-                                        </ul>
-                                    </div>
-                                    <div className="bg-cyan-100 rounded border border-cyan-200 p-3">
-                                        <p className="font-medium text-cyan-700 mb-1">💡 ข้อสังเกต:</p>
-                                        <p className="text-cyan-600 text-xs">
-                                            การสร้างอาคารชั้นเดียวบนที่ดินขนาดใหญ่อาจดูเหมือนใช้ที่ดินไม่คุ้ม (FAR ต่ำ) แต่ในเชิงอุตสาหกรรม <strong>Flow ของสินค้า</strong> สำคัญกว่าพื้นที่แนวตั้ง
-                                        </p>
-                                    </div>
                                 </div>
 
                                 <div className="flex items-center space-x-6 mb-8">
