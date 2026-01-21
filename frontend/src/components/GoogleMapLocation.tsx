@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { MapPin, Navigation, Search, Loader2, AlertCircle } from 'lucide-react';
 
 interface GoogleMapLocationProps {
@@ -20,24 +20,26 @@ const PRESET_LOCATIONS = [
     { name: 'บางแสน', distance: 80, lat: 13.2835, lng: 100.9265 },
 ];
 
+// Helper function to find closest preset
+const findClosestPreset = (distanceKm: number) => 
+    PRESET_LOCATIONS.reduce((prev, curr) => 
+        Math.abs(curr.distance - distanceKm) < Math.abs(prev.distance - distanceKm) ? curr : prev
+    );
+
 export default function GoogleMapLocation({ distanceKm, onLocationSelect }: GoogleMapLocationProps) {
-    const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
-    const [address, setAddress] = useState<string>('');
+    // Find closest preset location based on distance (memoized)
+    const closestPreset = useMemo(() => findClosestPreset(distanceKm), [distanceKm]);
+    
+    // Initialize state with closest preset values
+    const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number }>(() => ({
+        lat: findClosestPreset(distanceKm).lat,
+        lng: findClosestPreset(distanceKm).lng
+    }));
+    const [address, setAddress] = useState<string>(() => findClosestPreset(distanceKm).name);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
-
-    // Find closest preset location based on distance
-    const closestPreset = PRESET_LOCATIONS.reduce((prev, curr) => 
-        Math.abs(curr.distance - distanceKm) < Math.abs(prev.distance - distanceKm) ? curr : prev
-    );
-
-    // Initialize with closest preset
-    useEffect(() => {
-        setSelectedLocation({ lat: closestPreset.lat, lng: closestPreset.lng });
-        setAddress(closestPreset.name);
-    }, [distanceKm]);
 
     // Use OpenStreetMap (completely free, no API key)
     const openStreetMapUrl = useMemo(() => {
@@ -87,9 +89,7 @@ export default function GoogleMapLocation({ distanceKm, onLocationSelect }: Goog
         return R * c;
     };
 
-    const currentDistance = selectedLocation 
-        ? calculateDistanceFromCBD(selectedLocation.lat, selectedLocation.lng).toFixed(1)
-        : distanceKm;
+    const currentDistance = calculateDistanceFromCBD(selectedLocation.lat, selectedLocation.lng).toFixed(1);
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
