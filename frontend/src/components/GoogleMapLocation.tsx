@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MapPin, Navigation, Search, Loader2, AlertCircle } from 'lucide-react';
 
 interface GoogleMapLocationProps {
@@ -26,7 +26,6 @@ export default function GoogleMapLocation({ distanceKm, onLocationSelect }: Goog
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const mapRef = useRef<HTMLDivElement>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
     // Find closest preset location based on distance
@@ -40,16 +39,8 @@ export default function GoogleMapLocation({ distanceKm, onLocationSelect }: Goog
         setAddress(closestPreset.name);
     }, [distanceKm]);
 
-    // Generate Google Maps Embed URL
-    const getMapEmbedUrl = useCallback(() => {
-        const location = selectedLocation || { lat: closestPreset.lat, lng: closestPreset.lng };
-        // Using Google Maps Embed API (free, no API key required for basic embed)
-        const query = encodeURIComponent(`${location.lat},${location.lng}`);
-        return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${query}&zoom=14&maptype=roadmap`;
-    }, [selectedLocation, closestPreset]);
-
-    // Alternative: Use OpenStreetMap (completely free, no API key)
-    const getOpenStreetMapUrl = useCallback(() => {
+    // Use OpenStreetMap (completely free, no API key)
+    const openStreetMapUrl = useMemo(() => {
         const location = selectedLocation || { lat: closestPreset.lat, lng: closestPreset.lng };
         return `https://www.openstreetmap.org/export/embed.html?bbox=${location.lng - 0.02},${location.lat - 0.015},${location.lng + 0.02},${location.lat + 0.015}&layer=mapnik&marker=${location.lat},${location.lng}`;
     }, [selectedLocation, closestPreset]);
@@ -160,7 +151,7 @@ export default function GoogleMapLocation({ distanceKm, onLocationSelect }: Goog
             {/* Map Container */}
             <div className="relative rounded-lg overflow-hidden border border-slate-200" style={{ height: '300px' }}>
                 <iframe
-                    src={getOpenStreetMapUrl()}
+                    src={openStreetMapUrl}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

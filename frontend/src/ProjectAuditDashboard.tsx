@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AlertCircle, Calculator, Building, Coins, FileText, CheckCircle2, XCircle, AlertTriangle, Download } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { calculateFAR, isFARError, type FARInputs } from './utils/farCalculation';
 import { downloadBaanBidPDF, type PDFReportData } from './components/pdfExportUtils';
-import BlueprintAnalyzer from './components/BlueprintAnalyzer';
 import GoogleMapLocation from './components/GoogleMapLocation';
 
 // --- NumberInput Component with comma formatting ---
@@ -417,14 +416,6 @@ export default function ProjectAuditDashboard() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* AI Blueprint Analyzer */}
-                        <BlueprintAnalyzer
-                            proposedGFA={proposedGFA}
-                            landSizeRai={landSizeRai}
-                            proposedHeight={proposedHeight}
-                            costPerSqm={costPerSqm}
-                        />
 
                         {/* Google Map Location */}
                         <GoogleMapLocation
