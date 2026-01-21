@@ -1,10 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AlertCircle, Calculator, Building, Coins, FileText, CheckCircle2, XCircle, AlertTriangle, Download } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { calculateFAR, isFARError, type FARInputs } from './utils/farCalculation';
 import { downloadBaanBidPDF, type PDFReportData } from './components/pdfExportUtils';
+import BlueprintAnalyzer from './components/BlueprintAnalyzer';
+import GoogleMapLocation from './components/GoogleMapLocation';
+
+// --- NumberInput Component with comma formatting ---
+interface NumberInputProps {
+    id: string;
+    value: number;
+    onChange: (value: number) => void;
+    className?: string;
+    min?: number;
+}
+
+function NumberInput({ id, value, onChange, className, min = 0 }: NumberInputProps) {
+    const [displayValue, setDisplayValue] = useState(value.toLocaleString('en-US'));
+    const [isFocused, setIsFocused] = useState(false);
+
+    // Format number with commas
+    const formatNumber = (num: number) => num.toLocaleString('en-US');
+
+    // Parse string to number (remove commas)
+    const parseNumber = (str: string) => {
+        const cleaned = str.replace(/,/g, '');
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? 0 : num;
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        // Allow only numbers and commas
+        const cleaned = rawValue.replace(/[^0-9.,]/g, '');
+        setDisplayValue(cleaned);
+        
+        const numValue = parseNumber(cleaned);
+        if (numValue >= min) {
+            onChange(numValue);
+        }
+    };
+
+    const handleFocus = () => {
+        setIsFocused(true);
+        // Show raw number on focus for easier editing
+        setDisplayValue(value.toString());
+    };
+
+    const handleBlur = () => {
+        setIsFocused(false);
+        // Format with commas on blur
+        setDisplayValue(formatNumber(value));
+    };
+
+    // Sync display value when value prop changes (from outside)
+    React.useEffect(() => {
+        if (!isFocused) {
+            setDisplayValue(formatNumber(value));
+        }
+    }, [value, isFocused]);
+
+    return (
+        <input
+            id={id}
+            type="text"
+            inputMode="numeric"
+            value={displayValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className={className}
+        />
+    );
+}
 
 // --- Types ---
 interface AuditResult {
@@ -176,12 +246,13 @@ export default function ProjectAuditDashboard() {
                 {/* Header */}
                 <header className="flex items-center justify-between pb-6 border-b border-slate-200">
                     <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-blue-600 rounded-lg shadow-lg">
+                        <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg shadow-lg">
                             <Building className="w-8 h-8 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-800">ระบบตรวจสอบที่ดินราชพัสดุ (Bertaud)</h1>
-                            <p className="text-slate-500">แดชบอร์ดวิเคราะห์เศรษฐศาสตร์เมืองและความเป็นไปได้ทางการเงิน</p>
+                            <h1 className="text-3xl font-bold text-slate-800">ระบบวิเคราะห์เศรษฐศาสตร์เมืองและความเป็นไปได้ทางการเงิน</h1>
+                            <p className="text-slate-500">Bertaud Urban Economics & Financial Feasibility Analysis</p>
+                            <p className="text-xs text-slate-400 mt-1">พัฒนาโดย <span className="font-semibold text-blue-600">A.THONGCHART</span></p>
                         </div>
                     </div>
                     {result && (
@@ -208,11 +279,10 @@ export default function ProjectAuditDashboard() {
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="land-size" className="block text-sm font-medium text-slate-600 mb-1">ขนาดที่ดิน (ไร่)</label>
-                                    <input
+                                    <NumberInput
                                         id="land-size"
-                                        type="number"
                                         value={landSizeRai}
-                                        onChange={(e) => setLandSizeRai(Number(e.target.value))}
+                                        onChange={setLandSizeRai}
                                         className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                     />
                                     <p className="text-xs text-slate-400 mt-1">= {(landSizeRai * 1600).toLocaleString()} ตร.ม.</p>
@@ -220,33 +290,30 @@ export default function ProjectAuditDashboard() {
 
                                 <div>
                                     <label htmlFor="proposed-gfa" className="block text-sm font-medium text-slate-600 mb-1">พื้นที่อาคารรวม (ตร.ม.)</label>
-                                    <input
+                                    <NumberInput
                                         id="proposed-gfa"
-                                        type="number"
                                         value={proposedGFA}
-                                        onChange={(e) => setProposedGFA(Number(e.target.value))}
+                                        onChange={setProposedGFA}
                                         className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                     />
                                 </div>
 
                                 <div>
                                     <label htmlFor="building-height" className="block text-sm font-medium text-slate-600 mb-1">ความสูงอาคาร (เมตร)</label>
-                                    <input
+                                    <NumberInput
                                         id="building-height"
-                                        type="number"
                                         value={proposedHeight}
-                                        onChange={(e) => setProposedHeight(Number(e.target.value))}
+                                        onChange={setProposedHeight}
                                         className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                     />
                                 </div>
 
                                 <div>
                                     <label htmlFor="cost-per-sqm" className="block text-sm font-medium text-slate-600 mb-1">ค่าก่อสร้าง (บาท/ตร.ม.)</label>
-                                    <input
+                                    <NumberInput
                                         id="cost-per-sqm"
-                                        type="number"
                                         value={costPerSqm}
-                                        onChange={(e) => setCostPerSqm(Number(e.target.value))}
+                                        onChange={setCostPerSqm}
                                         className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                     />
                                 </div>
@@ -256,21 +323,19 @@ export default function ProjectAuditDashboard() {
                                     <div className="space-y-3">
                                         <div>
                                             <label htmlFor="upfront-fee" className="block text-xs font-medium text-slate-500 mb-1">ค่าธรรมเนียมแรกเข้า (บาท)</label>
-                                            <input
+                                            <NumberInput
                                                 id="upfront-fee"
-                                                type="number"
                                                 value={upfrontFee}
-                                                onChange={(e) => setUpfrontFee(Number(e.target.value))}
+                                                onChange={setUpfrontFee}
                                                 className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="annual-rent" className="block text-xs font-medium text-slate-500 mb-1">ค่าเช่ารายปี (บาท)</label>
-                                            <input
+                                            <NumberInput
                                                 id="annual-rent"
-                                                type="number"
                                                 value={annualRent}
-                                                onChange={(e) => setAnnualRent(Number(e.target.value))}
+                                                onChange={setAnnualRent}
                                                 className="w-full px-3 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
                                             />
                                         </div>
@@ -352,6 +417,19 @@ export default function ProjectAuditDashboard() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* AI Blueprint Analyzer */}
+                        <BlueprintAnalyzer
+                            proposedGFA={proposedGFA}
+                            landSizeRai={landSizeRai}
+                            proposedHeight={proposedHeight}
+                            costPerSqm={costPerSqm}
+                        />
+
+                        {/* Google Map Location */}
+                        <GoogleMapLocation
+                            distanceKm={distanceKm}
+                        />
                     </div>
 
                     {/* Right Column: Results */}
@@ -375,13 +453,13 @@ export default function ProjectAuditDashboard() {
                                         แบบจำลองของ Alain Bertaud ใช้สมการการลดลงของความหนาแน่น (Density Gradient) เพื่อหาความหนาแน่นที่เหมาะสม ณ ระยะทางห่างจากศูนย์กลางเมือง (CBD)
                                     </p>
                                     <div className="bg-white p-3 rounded border border-blue-100 font-mono text-center my-3 text-slate-900">
-                                        D(x) = D₀Val • e^(-gx)
+                                        D(x) = D<sub>0</sub> × e<sup>−gx</sup> = {d0} × e<sup>−{gradient}×{distanceKm}</sup> = <strong>{result?.theoreticalFAR.toFixed(2) ?? '—'}</strong>
                                     </div>
                                     <ul className="list-disc list-inside space-y-1 text-slate-600 ml-2">
-                                        <li><strong>D(x)</strong>: ความหนาแน่นที่ระยะทาง x</li>
-                                        <li><strong>D₀</strong>: ความหนาแน่นสูงสุดที่ศูนย์กลาง (CBD)</li>
-                                        <li><strong>g</strong>: ค่าสัมประสิทธิ์การกระจายตัว (Density Gradient)</li>
-                                        <li><strong>x</strong>: ระยะทางจากศูนย์กลาง (กม.)</li>
+                                        <li><strong>D(x)</strong>: ความหนาแน่นที่ระยะทาง x = <strong>{result?.theoreticalFAR.toFixed(2) ?? '—'}</strong></li>
+                                        <li><strong>D<sub>0</sub></strong>: ความหนาแน่นสูงสุดที่ศูนย์กลาง (CBD) = <strong>{d0}</strong></li>
+                                        <li><strong>g</strong>: ค่าสัมประสิทธิ์การกระจายตัว (Density Gradient) = <strong>{gradient}</strong></li>
+                                        <li><strong>x</strong>: ระยะทางจากศูนย์กลาง = <strong>{distanceKm} กม.</strong></li>
                                     </ul>
                                 </div>
 
